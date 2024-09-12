@@ -29,7 +29,7 @@ const ChatHeader = ({ companion }: ChatClientProps) => {
 
   const onDelete = async () => {
     try {
-      await axios.delete("/api/companionj/${companion.id}");
+      await axios.delete(`/api/companion/${companion.id}`);
       toast({
         description: "Success.",
       });

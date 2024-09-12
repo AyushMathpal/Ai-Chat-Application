@@ -25,8 +25,9 @@ export const ChatMessages = ({
     };
   }, []);
     useEffect(() => {
+      console.log(messages);
         if (scrollRef.current) {
-        scrollRef.current.scrollIntoView({ behavior: "smooth" });
+        scrollRef?.current?.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages.length]);
 
@@ -43,7 +44,7 @@ export const ChatMessages = ({
           key={index}
           role={message.role}
           content={message.content}
-          src={message.src}
+          src={companion.src}
         />
       ))}
       {isLoading && (<ChatMessage role="system" isLoading src={companion.src}/>)}

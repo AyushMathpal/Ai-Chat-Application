@@ -1,7 +1,7 @@
-import { Redis } from '@upstash/redis';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { PineconeClient } from '@pinecone-database/pinecone';
-import { PineconeStore } from 'langchain/vectorstores/pinecone';
+import { Redis } from "@upstash/redis";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { Pinecone } from "@pinecone-database/pinecone";
+import { PineconeStore } from "langchain/vectorstores/pinecone";
 
 export type CompanionKey = {
   companionName: string;
@@ -12,29 +12,21 @@ export type CompanionKey = {
 export class MemoryManager {
   private static instance: MemoryManager;
   private history: Redis;
-  private vectorDBClient: PineconeClient;
+  private vectorDBClient: Pinecone;
 
   public constructor() {
     this.history = Redis.fromEnv();
-    this.vectorDBClient = new PineconeClient();
+    this.vectorDBClient = new Pinecone();
   }
 
-  public async init() {
-    if (this.vectorDBClient instanceof PineconeClient) {
-      await this.vectorDBClient.init({
-        apiKey: process.env.PINECONE_API_KEY!,
-        environment: process.env.PINECONE_ENVIRONMENT!,
-      });
-    }
-  }
-
+  
   public async vectorSearch(
     recentChatHistory: string,
     companionFileName: string
   ) {
-    const pineconeClient = <PineconeClient>this.vectorDBClient;
-    const pineconeIndex = await pineconeClient.Index(
-      process.env.PINECONE_INDEX! || ''
+    const Pinecone = <Pinecone>this.vectorDBClient;
+    const pineconeIndex = await Pinecone.Index(
+      process.env.PINECONE_INDEX! || ""
     );
     const vectorStore = await PineconeStore.fromExistingIndex(
       new OpenAIEmbeddings({
@@ -49,7 +41,7 @@ export class MemoryManager {
         fileName: companionFileName,
       })
       .catch((err) => {
-        console.log('Failed to search for similar documents', err);
+        console.log("Failed to search for similar documents", err);
       });
     return similarDocs;
   }
@@ -57,7 +49,7 @@ export class MemoryManager {
   public static async getInstance(): Promise<MemoryManager> {
     if (!MemoryManager.instance) {
       MemoryManager.instance = new MemoryManager();
-      await MemoryManager.instance.init();
+      MemoryManager.instance.vectorDBClient=new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
     }
     return MemoryManager.instance;
   }
@@ -67,9 +59,9 @@ export class MemoryManager {
   }
 
   public async writeToHistory(text: string, companionKey: CompanionKey) {
-    if (!companionKey || typeof companionKey.userId == 'undefined') {
-      console.log('Companion key set incorrectly');
-      return '';
+    if (!companionKey || typeof companionKey.userId == "undefined") {
+      console.log("Companion key set incorrectly");
+      return "";
     }
     const key = this.generateRedisCompanionKey(companionKey);
     const result = await this.history.zadd(key, {
@@ -80,27 +72,27 @@ export class MemoryManager {
   }
 
   public async readLatestHistory(companionKey: CompanionKey) {
-    if (!companionKey || typeof companionKey.userId == 'undefined') {
-      console.log('Companion key set incorrectly');
-      return '';
+    if (!companionKey || typeof companionKey.userId == "undefined") {
+      console.log("Companion key set incorrectly");
+      return "";
     }
     const key = this.generateRedisCompanionKey(companionKey);
     let result = await this.history.zrange(key, 0, Date.now(), {
       byScore: true,
     });
     result = result.slice(-30).reverse();
-    const recentChats = result.reverse().join('\n');
+    const recentChats = result.reverse().join("\n");
     return recentChats;
   }
 
   public async seedChatHistory(
     seedContent: string,
-    delimiter: string = '\n',
+    delimiter: string = "\n",
     companionKey: CompanionKey
   ) {
     const key = this.generateRedisCompanionKey(companionKey);
     if (await this.history.exists(key)) {
-      console.log('Chat history already exists');
+      console.log("Chat history already exists");
       return;
     }
 

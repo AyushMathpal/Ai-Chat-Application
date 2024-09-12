@@ -75,7 +75,7 @@ export async function POST(
       relevantHistory = similarDocs.map((doc) => doc.pageContent).join("\n");
     }
 
-    const { handlers } = LangChainStream();
+    // const { handlers } = LangChainStream();
     const model = new Replicate({
       model:
         "a16z-infra/llama-2-13b-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5",
@@ -83,9 +83,9 @@ export async function POST(
         max_length: 2048,
       },
       apiKey: process.env.REPLICATE_API_TOKEN,
-      callbackManager: CallbackManager.fromHandlers(handlers),
+      // callbackManager: CallbackManager.fromHandlers(handlers),
     });
-
+    console.log(relevantHistory, recentChatHistory,similarDocs);
     model.verbose = true;
     const resp = String(
       await model
@@ -101,7 +101,7 @@ export async function POST(
   
           ${recentChatHistory}\n${companion.name}:`
         )
-        .catch(console.error)
+        .catch((error) => console.log("Error in model call."))
     );
     const cleaned = resp.replaceAll(",", "");
     const chunks = cleaned.split("\n");
@@ -134,6 +134,7 @@ export async function POST(
 
     return new StreamingTextResponse(s);
   } catch (error) {
+    console.log(error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
