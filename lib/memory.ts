@@ -10,6 +10,7 @@ export type CompanionKey = {
 };
 
 export class MemoryManager {
+  // Creating a static singular instance of the class, so as to prevent reinitiation for every api call
   private static instance: MemoryManager;
   private history: Redis;
   private vectorDBClient: Pinecone;
@@ -46,7 +47,8 @@ export class MemoryManager {
     return similarDocs;
   }
 
-  public static async getInstance(): Promise<MemoryManager> {
+  // Creates singular instance of Memory Manager class
+  public static async getInstance() : Promise<MemoryManager> {
     if (!MemoryManager.instance) {
       MemoryManager.instance = new MemoryManager();
       MemoryManager.instance.vectorDBClient=new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
@@ -54,10 +56,13 @@ export class MemoryManager {
     return MemoryManager.instance;
   }
 
+  // Acts as a unique key string for user and model for storing in Redis
   private generateRedisCompanionKey(companionKey: CompanionKey): string {
+   
     return `${companionKey.companionName}-${companionKey.modelName}-${companionKey.userId}`;
   }
 
+  // Write into the redis history for context memory
   public async writeToHistory(text: string, companionKey: CompanionKey) {
     if (!companionKey || typeof companionKey.userId == "undefined") {
       console.log("Companion key set incorrectly");
@@ -71,6 +76,7 @@ export class MemoryManager {
     return result;
   }
 
+  // Fetch from redis history
   public async readLatestHistory(companionKey: CompanionKey) {
     if (!companionKey || typeof companionKey.userId == "undefined") {
       console.log("Companion key set incorrectly");
@@ -84,7 +90,10 @@ export class MemoryManager {
     const recentChats = result.reverse().join("\n");
     return recentChats;
   }
-
+  /* Sets the initial configuration of the companion.
+     The example conversation and behaviour are merged as inputs to this function.
+     This kind of acts as a system prompt
+   */
   public async seedChatHistory(
     seedContent: string,
     delimiter: string = "\n",

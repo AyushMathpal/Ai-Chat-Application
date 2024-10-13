@@ -53,7 +53,7 @@ export async function POST(
     const companionKey = {
       companionName: name!,
       userId: user.id,
-      modelName: "llama2-13b",
+      modelName: "llama3-8b",
     };
     const memoryManager = await MemoryManager.getInstance();
     const records = await memoryManager.readLatestHistory(companionKey);
@@ -62,30 +62,33 @@ export async function POST(
     }
     await memoryManager.writeToHistory("User: " + prompt + "\n", companionKey);
 
+    // This history comes from redis database as conversation context.
     const recentChatHistory = await memoryManager.readLatestHistory(
       companionKey
     );
+
+    // This is the similarity search for relevant information
     const similarDocs = await memoryManager.vectorSearch(
       recentChatHistory,
       companion_file_name
     );
 
+    
     let relevantHistory = "";
     if (!!similarDocs && similarDocs.length !== 0) {
       relevantHistory = similarDocs.map((doc) => doc.pageContent).join("\n");
     }
 
-    // const { handlers } = LangChainStream();
+    // Model provider
     const model = new Replicate({
       model:
-        "a16z-infra/llama-2-13b-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5",
+        "meta/meta-llama-3-8b-instruct:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5",
       input: {
-        max_length: 2048,
+        max_length: 1024,
       },
       apiKey: process.env.REPLICATE_API_TOKEN,
-      // callbackManager: CallbackManager.fromHandlers(handlers),
+      
     });
-    console.log(relevantHistory, recentChatHistory,similarDocs);
     model.verbose = true;
     const resp = String(
       await model
@@ -97,12 +100,12 @@ export async function POST(
   
           Below are relevant details about ${companion.name}'s past and the conversation you are in.
           ${relevantHistory}
-  
-  
           ${recentChatHistory}\n${companion.name}:`
         )
         .catch((error) => console.log("Error in model call."))
     );
+
+    // Model response had lot of commas. Parsed to fix commas.
     const cleaned = resp.replaceAll(",", "");
     const chunks = cleaned.split("\n");
     const response = chunks[0];
@@ -110,6 +113,8 @@ export async function POST(
     await memoryManager.writeToHistory("" + response.trim(), companionKey);
     var Readable = require("stream").Readable;
 
+
+    // Streamable response in readable language
     let s = new Readable();
     s.push(response);
     s.push(null);
