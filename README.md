@@ -20,6 +20,20 @@ ChatVerse is an AI-powered full-stack chat interface where users engage with dyn
 
 ---
 
+## 🖼 **Screenshots**  
+ 
+<img width="880" alt="Screenshot 2024-10-14 at 9 03 07 PM" src="https://github.com/user-attachments/assets/ba093ec0-2f44-413b-9ac0-dbefccac6ad0">
+<img width="800" alt="Screenshot 2024-10-14 at 9 04 33 PM" src="https://github.com/user-attachments/assets/4d348b2a-7fbe-470d-a4b4-4ca1cc377590">
+
+---
+
+## ⚙️ **Architecture Overview**  
+Here’s how everything connects in the system:
+<img width="803" alt="Screenshot 2024-10-14 at 10 01 22 PM" src="https://github.com/user-attachments/assets/e8e7e52a-207c-44d1-b10c-f6e2819e3a3d">
+
+
+---
+
 ## 🛠 **Tech Stack**  
 - **Frontend**: Next.js, React.js, TailwindCSS  
 - **Backend**: Next.js API Routes, Prisma ORM  
@@ -72,20 +86,6 @@ Follow these steps to set up the project on your local machine:
 
 ---
 
-## 🖼 **Screenshots**  
- 
-<img width="880" alt="Screenshot 2024-10-14 at 9 03 07 PM" src="https://github.com/user-attachments/assets/ba093ec0-2f44-413b-9ac0-dbefccac6ad0">
-<img width="800" alt="Screenshot 2024-10-14 at 9 04 33 PM" src="https://github.com/user-attachments/assets/4d348b2a-7fbe-470d-a4b4-4ca1cc377590">
-
----
-
-## ⚙️ **Architecture Overview**  
-Here’s how everything connects in the system:
-<img width="803" alt="Screenshot 2024-10-14 at 10 01 22 PM" src="https://github.com/user-attachments/assets/e8e7e52a-207c-44d1-b10c-f6e2819e3a3d">
-
- 
-
----
 
 ## 🔒 **Security and Authentication**  
 - User authentication is managed through **JWT** to secure sessions.  
